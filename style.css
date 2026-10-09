@@ -1,0 +1,551 @@
+$harga_input = isset($_POST['harga_mobil']) ? $_POST['harga_mobil'] : '';
+$dp_persen   = isset($_POST['dp_persen']) ? floatval($_POST['dp_persen']) : 20;
+$tenor_tahun = isset($_POST['tenor']) ? intval($_POST['tenor']) : 5;
+
+$is_submitted = false;
+
+// Proses perhitungan ketika form dikirim
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($harga_input)) {
+    $is_submitted = true;
+
+    // Bersihkan format input angka
+    $harga_mobil = floatval(preg_replace('/[^0-9]/', '', $harga_input));
+
+    // 1. Ketentuan Bunga 20% dari harga mobil
+    $persen_bunga = 20;
+    $nominal_bunga = ($persen_bunga / 100) * $harga_mobil;
+
+    // 2. Hitung Nominal DP
+    $nominal_dp = ($dp_persen / 100) * $harga_mobil;
+
+    // 3. Konversi Tenor ke Bulan
+    $jumlah_bulan = $tenor_tahun * 12;
+
+    // 4. Rumus Nominal Angsuran: ((harga mobil + bunga 20%) - DP) / jumlah bulan
+    $total_pinjaman = ($harga_mobil + $nominal_bunga) - $nominal_dp;
+    $angsuran_per_bulan = $total_pinjaman / $jumlah_bulan;
+}
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Angsuran Mobil - PT Auto Finance</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Smooth Scroll Bawaan CSS */
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            padding: 20px 15px;
+        }
+
+        .main-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+        }
+
+        /* Header Style Fixed/Sticky Sticky Navigation */
+        .header {
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 25px;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .logo-box {
+            background: #2563eb;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            letter-spacing: 1px;
+        }
+
+        .company-name {
+            font-weight: 600;
+            font-size: 18px;
+            color: #111827;
+        }
+
+        .nav-menu {
+            display: flex;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4b5563;
+            text-decoration: none;
+            border-right: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:last-child { border-right: none; }
+        .nav-item:hover, .nav-item.active { 
+            background: #2563eb; 
+            color: #ffffff; 
+        }
+
+        /* Slider Block */
+        .slider-box {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: #ffffff;
+            height: 140px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 20px;
+            letter-spacing: 1px;
+            margin-bottom: 25px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+            scroll-margin-top: 130px;
+        }
+
+        .slider-box p {
+            font-size: 13px;
+            font-weight: 400;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* Middle Section: Tentang & Gambar */
+        .middle-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            scroll-margin-top: 130px;
+        }
+
+        .info-card h3 {
+            font-size: 16px;
+            color: #1e3a8a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .info-card p {
+            font-size: 13px;
+            line-height: 1.7;
+            color: #4b5563;
+            margin-bottom: 10px;
+            text-align: justify;
+        }
+
+        .info-card ul {
+            font-size: 13px;
+            color: #4b5563;
+            padding-left: 20px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        /* Gallery Grid Gambar Mobil */
+        .car-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .car-gallery img {
+            width: 100%;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .car-gallery img:hover {
+            transform: scale(1.03);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Form Kalkulator */
+        .calc-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 25px;
+            background: #ffffff;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            width: 130px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .input-group {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-control {
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        input[type="text"].form-control { width: 100%; max-width: 280px; }
+        select.form-control { width: 100px; }
+
+        .tenor-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .radio-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f4f6;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
+            transition: 0.2s;
+        }
+
+        .radio-btn:hover { background: #e5e7eb; }
+
+        .btn-submit {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-submit:hover { 
+            background: #1d4ed8; 
+            transform: translateY(-2px);
+        }
+
+        /* Output Perhitungan */
+        .result-box {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px dashed #e5e7eb;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .result-label { color: #6b7280; font-weight: 500; }
+        .result-value { font-weight: 600; color: #111827; }
+
+        .total-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .total-label { font-weight: 600; color: #1e40af; font-size: 15px; }
+        .total-value { font-weight: 700; color: #1e3a8a; font-size: 18px; }
+
+        /* Footer / Kontak */
+        .footer-box {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 25px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            scroll-margin-top: 130px;
+        }
+
+        .footer-box h4 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            color: #60a5fa;
+            border-bottom: 1px solid #374151;
+            padding-bottom: 6px;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #d1d5db;
+        }
+
+        @media (max-width: 576px) {
+            .form-group { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .total-box { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .car-gallery { grid-template-columns: 1fr; }
+            .logo-img {
+    width: 45px;          /* Ukuran lebar logo */
+    height: 45px;         /* Ukuran tinggi logo (harus sama dengan width agar bulat sempurna) */
+    object-fit: cover;    /* Memastikan gambar terpotong rapi tanpa gepeng */
+    border-radius: 50%;   /* Membuat bentuk bulat/lingkaran */
+    border: 2px solid #2563eb; /* (Opsional) Lis garis tepi warna biru agar manis */
+}
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <!-- Header / Navigasi -->
+    <div class="header">
+        <div class="top-bar">
+           <img src="mobil.png" alt="Logo Perusahaan" class="logo-img">
+            <div class="company-name">PT Auto Finance Indonesia</div>
+        </div>
+        <div class="nav-menu">
+            <a href="#beranda" class="nav-item active" onclick="setActiveNav(this)">Beranda</a>
+            <a href="#tentang" class="nav-item" onclick="setActiveNav(this)">Tentang Perusahaan</a>
+            <a href="#kontak" class="nav-item" onclick="setActiveNav(this)">Kontak</a>
+        </div>
+    </div>
+
+    <!-- Bagian Beranda / Slider -->
+    <div id="beranda" class="slider-box">
+        <i class="fa-solid fa-car-side fa-lg mb-2"></i>
+        <span>SLIDER PROMO UTAMA</span>
+        <p>Solusi Pembiayaan Mobil Impian Anda - Mudah, Cepat & Transparan</p>
+    </div>
+
+    <!-- Bagian Tengah: Tentang Perusahaan & Gambar -->
+    <div class="middle-container">
+        <!-- Card 1: Teks Tentang Perusahaan -->
+        <div id="tentang" class="info-card">
+            <h3><i class="fa-solid fa-building-columns"></i> Tentang Perusahaan</h3>
+            <p>
+                <strong>PT Auto Finance Indonesia</strong> adalah penyedia solusi pembiayaan kendaraan bermotor terpercaya yang telah melayani masyarakat Indonesia secara profesional. Kami berkomitmen untuk memberikan kemudahan bagi Anda dalam mewujudkan impian memiliki mobil pribadi maupun operasional bisnis tanpa keraguan.
+            </p>
+            <p>
+                Melalui kalkulator simulasi kredit online ini, kami menghadirkan transparansi penuh. Anda dapat menghitung estimasi Uang Muka (DP), bunga tetap, hingga jumlah angsuran bulanan secara mandiri sebelum mengajukan pinjaman.
+            </p>
+            <p><strong>Keunggulan Layanan Kami:</strong></p>
+            <ul>
+                <li><i class="fa-solid fa-check text-primary"></i> <strong>Suku Bunga Bersaing:</strong> Bunga tetap yang terjangkau tanpa biaya tersembunyi.</li>
+                <li><i class="fa-solid fa-check text-primary"></i> <strong>Tenor Fleksibel:</strong> Pilihan waktu cicilan mulai dari 12 hingga 60 bulan.</li>
+                <li><i class="fa-solid fa-check text-primary"></i> <strong>Proses Cepat:</strong> Syarat pendaftaran mudah dengan persetujuan singkat.</li>
+            </ul>
+        </div>
+
+        <!-- Card 2: Gambar Mobil-Mobil -->
+        <div class="info-card">
+            <h3><i class="fa-solid fa-car"></i> Galeri Pilihan Mobil</h3>
+            <p>Berbagai pilihan unit mobil impian keluarga dan bisnis yang bisa Anda simulasikan angsurannya:</p>
+            
+            <div class="car-gallery">
+                <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=500&q=80" alt="Mobil Sedan Mewah">
+                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=500&q=80" alt="Mobil SUV Modern">
+                <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=500&q=80" alt="Mobil Sport">
+            </div>
+        </div>
+    </div>
+
+    <!-- Kalkulator Form -->
+    <div class="calc-box">
+        <h3 style="font-size: 16px; color: #111827; margin-bottom: 20px;">
+            <i class="fa-solid fa-calculator text-primary me-2"></i> Simulasi Angsuran Mobil
+        </h3>
+        <form method="POST" action="">
+            <div class="form-group">
+                <label class="form-label">Harga Mobil</label>
+                <div class="input-group">
+                    <input type="text" name="harga_mobil" class="form-control" 
+                           value="<?= htmlspecialchars($harga_input) ?>" 
+                           placeholder="Masukkan Harga Mobil (Rp)" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">DP</label>
+                <div class="input-group">
+                    <select name="dp_persen" class="form-control">
+                        <?php
+                        $opsi_dp = [10, 20, 30, 40, 50, 60];
+                        foreach ($opsi_dp as $dp) {
+                            $selected = ($dp_persen == $dp) ? 'selected' : '';
+                            echo "<option value='$dp' $selected>$dp</option>";
+                        }
+                        ?>
+                    </select>
+                    <span style="font-weight: 600;">%</span>
+                </div>
+            </div>
+
+            <div class="form-group" style="align-items: flex-start;">
+                <label class="form-label" style="margin-top: 8px;">Tenor</label>
+                <div class="tenor-group">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <label class="radio-btn">
+                            <input type="radio" name="tenor" value="<?= $i ?>" <?= ($tenor_tahun == $i) ? 'checked' : '' ?>>
+                            <?= $i ?> Tahun
+                        </label>
+                    <?php endfor; ?>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 25px;">
+                <button type="submit" class="btn-submit">Hitung Angsuran</button>
+            </div>
+        </form>
+
+        <?php if ($is_submitted): ?>
+        <!-- Hasil Perhitungan -->
+        <div class="result-box">
+            <div class="result-row">
+                <span class="result-label">Harga Mobil</span>
+                <span class="result-value">Rp. <?= number_format($harga_mobil, 0, ',', '.') ?></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">DP</span>
+                <span class="result-value"><?= $dp_persen ?>% (Rp. <?= number_format($nominal_dp, 0, ',', '.') ?>)</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Tenor</span>
+                <span class="result-value"><?= $tenor_tahun ?> Tahun (<?= $jumlah_bulan ?> Bulan)</span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Bunga</span>
+                <span class="result-value"><?= $persen_bunga ?>% (Rp. <?= number_format($nominal_bunga, 0, ',', '.') ?>)</span>
+            </div>
+
+            <div class="total-box">
+                <span class="total-label">Jumlah Angsuran</span>
+                <span class="total-value">Rp. <?= number_format($angsuran_per_bulan, 0, ',', '.') ?> / Bulan</span>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Bagian Footer / Kontak -->
+    <div id="kontak" class="footer-box">
+        <h4>Footer / Kontak</h4>
+        <p>Hubungi layanan pelanggan kami untuk konsultasi pembiayaan kendaraan:</p>
+        <div class="contact-info">
+            <div class="contact-item">
+                <i class="fa-solid fa-location-dot"></i> Jl. Jendral Sudirman No. 123, Jakarta Selatan
+            </div>
+            <div class="contact-item">
+                <i class="fa-solid fa-phone"></i> (021) 555-0199 / 0812-3456-7890
+            </div>
+            <div class="contact-item">
+                <i class="fa-solid fa-envelope"></i> info@autofinance.co.id
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fungsi JavaScript untuk mengubah tombol navigasi aktif
+function setActiveNav(element) {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    element.classList.add('active');
+}
+</script>
+
+</body>
+</html>
